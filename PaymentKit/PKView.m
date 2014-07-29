@@ -65,17 +65,24 @@
 - (void)setBorderStyle:(UITextBorderStyle)borderStyle
 {
 	_borderStyle = borderStyle;
-	
-	if (borderStyle == UITextBorderStyleRoundedRect) {
-		self.layer.borderColor = [UIColor colorWithRed:191/255.0 green:192/255.0 blue:194/255.0 alpha:1.0].CGColor;
-		self.layer.cornerRadius = 6.0;
-		self.layer.borderWidth = 0.5;
-	}
-	else {
-		self.layer.borderColor = nil;
-		self.layer.cornerRadius = 0.0;
-		self.layer.borderWidth = 0.0;
-	}
+	switch (borderStyle) {
+        case UITextBorderStyleRoundedRect:
+            self.layer.borderColor = [UIColor colorWithRed:191/255.0 green:192/255.0 blue:194/255.0 alpha:1.0].CGColor;
+            self.layer.cornerRadius = 6.0;
+            self.layer.borderWidth = 0.5;
+            break;
+        case UITextBorderStyleLine:
+            self.layer.borderColor = [UIColor grayColor].CGColor;
+            self.layer.cornerRadius = 0.0;
+            self.layer.borderWidth = 0.5;
+            break;
+        default:
+        case UITextBorderStyleNone:
+            self.layer.borderColor = nil;
+            self.layer.cornerRadius = 0.0;
+            self.layer.borderWidth = 0.0;
+            break;
+    }
 }
 
 - (void)setDefaultTextAttributes:(NSDictionary *)defaultTextAttributes
@@ -157,9 +164,9 @@
     [self addSubview:_placeholderView];
     
 	if (self.imageStyle == PKViewImageStyleNormal) {
-		UIView *line = [[UIView alloc] initWithFrame:CGRectMake(_placeholderView.frame.size.width - 0.5, 0, 0.5,  _innerView.frame.size.height)];
-		line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
-		[self addSubview:line];
+//		UIView *line = [[UIView alloc] initWithFrame:CGRectMake(_placeholderView.frame.size.width - 0.5, 0, 0.5,  _innerView.frame.size.height)];
+//		line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
+//		[self addSubview:line];
 	}
 	
     [self stateCardNumber];
@@ -191,22 +198,22 @@
 
 - (void)setupCardExpiryField
 {
-	UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, -6.0, 0.5, _innerView.frame.size.height)];
-	line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
-	
+//	UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, -6.0, 0.5, _innerView.frame.size.height)];
+//	line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
+//	
 	_cardExpiryField = [self textFieldWithPlaceholder:@"MM/YY"];
-	_cardExpiryField.leftView = line;
-	_cardExpiryField.leftViewMode = UITextFieldViewModeAlways;
+//	_cardExpiryField.leftView = line;
+//	_cardExpiryField.leftViewMode = UITextFieldViewModeAlways;
 }
 
 - (void)setupCardCVCField
 {
-	UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, -6.0, 0.5, _innerView.frame.size.height)];
-	line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
-	
+//	UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, -6.0, 0.5, _innerView.frame.size.height)];
+//	line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
+//	
 	_cardCVCField = [self textFieldWithPlaceholder:@"CVC"];
-	_cardCVCField.leftView = line;
-	_cardCVCField.leftViewMode = UITextFieldViewModeAlways;
+//	_cardCVCField.leftView = line;
+//	_cardCVCField.leftViewMode = UITextFieldViewModeAlways;
 }
 
 // Accessors

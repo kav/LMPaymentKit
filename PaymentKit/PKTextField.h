@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-
+#import <JVFloatLabeledTextField.h>
 @class PKTextField;
 
-@interface PKTextField : UITextField
+@interface PKTextField :  UITextField
 
 + (NSString *)textByRemovingUselessSpacesFromString:(NSString *)string;
 
