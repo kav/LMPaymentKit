@@ -59,4 +59,6 @@ typedef enum {
 @property (weak) id <PKViewDelegate> delegate;
 @property (retain) PKCard *card;
 
+@property (nonatomic, readonly) UILabel *floatingLabel;
+
 @end

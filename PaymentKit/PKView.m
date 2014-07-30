@@ -19,28 +19,11 @@
     BOOL isValidState;
 }
 
-- (void)setup;
-- (void)setupPlaceholderView;
-- (void)setupCardNumberField;
-- (void)setupCardExpiryField;
-- (void)setupCardCVCField;
+@property (strong, nonatomic) UIView *clippingView;
+@property (nonatomic, strong) NSNumber * floatingLabelYPadding UI_APPEARANCE_SELECTOR;
+@property (nonatomic, assign) NSInteger animateEvenIfNotFirstResponder UI_APPEARANCE_SELECTOR; // Can't use BOOL for UI_APPEARANCE. Non-zero == YES
+@property (nonatomic, assign) NSTimeInterval floatingLabelHideAnimationDuration;
 
-- (void)stateCardNumber;
-- (void)stateMeta;
-- (void)stateCardCVC;
-
-- (void)setPlaceholderViewImage:(UIImage *)image;
-- (void)setPlaceholderToCVC;
-- (void)setPlaceholderToCardType;
-
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)replacementString;
-- (BOOL)cardNumberFieldShouldChangeCharactersInRange: (NSRange)range replacementString:(NSString *)replacementString;
-- (BOOL)cardExpiryShouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)replacementString;
-- (BOOL)cardCVCShouldChangeCharactersInRange: (NSRange)range replacementString:(NSString *)replacementString;
-
-- (void)checkValid;
-- (void)textFieldIsValid:(UITextField *)textField;
-- (void)textFieldIsInvalid:(UITextField *)textField withErrors:(BOOL)errors;
 @end
 
 @implementation PKView
@@ -67,20 +50,20 @@
 	_borderStyle = borderStyle;
 	switch (borderStyle) {
         case UITextBorderStyleRoundedRect:
-            self.layer.borderColor = [UIColor colorWithRed:191/255.0 green:192/255.0 blue:194/255.0 alpha:1.0].CGColor;
-            self.layer.cornerRadius = 6.0;
-            self.layer.borderWidth = 0.5;
+            _clippingView.layer.borderColor = [UIColor colorWithRed:191/255.0 green:192/255.0 blue:194/255.0 alpha:1.0].CGColor;
+            _clippingView.layer.cornerRadius = 6.0;
+            _clippingView.layer.borderWidth = 0.5;
             break;
         case UITextBorderStyleLine:
-            self.layer.borderColor = [UIColor grayColor].CGColor;
-            self.layer.cornerRadius = 0.0;
-            self.layer.borderWidth = 0.5;
+            _clippingView.layer.borderColor = [UIColor grayColor].CGColor;
+            _clippingView.layer.cornerRadius = 0.0;
+            _clippingView.layer.borderWidth = 0.5;
             break;
         default:
         case UITextBorderStyleNone:
-            self.layer.borderColor = nil;
-            self.layer.cornerRadius = 0.0;
-            self.layer.borderWidth = 0.0;
+            _clippingView.layer.borderColor = nil;
+            _clippingView.layer.cornerRadius = 0.0;
+            _clippingView.layer.borderWidth = 0.0;
             break;
     }
 }
@@ -137,13 +120,29 @@
 	self.borderStyle = UITextBorderStyleRoundedRect;
 	self.layer.masksToBounds = YES;
 	self.backgroundColor = [UIColor whiteColor];
-	
+    	
     isInitialState = YES;
     isValidState   = NO;
     
+    _floatingLabel = [UILabel new];
+    _floatingLabel.font = [UIFont boldSystemFontOfSize:12.0f];
+    _floatingLabel.frame = CGRectMake(15,-_floatingLabel.font.lineHeight/2, 0, 0);
+//    _floatingLabel.alpha = 0.0f;
+	
+    // some basic default fonts/colors
+    _floatingLabel.textColor = [UIColor grayColor];
+    _floatingLabel.backgroundColor = [UIColor whiteColor];
+//    _animateEvenIfNotFirstResponder = NO;
+//    _floatingLabelShowAnimationDuration = kFloatingLabelShowAnimationDuration;
+//    _floatingLabelHideAnimationDuration = kFloatingLabelHideAnimationDuration;
+    
+    self.clipsToBounds = NO;
+    self.floatingLabel.text = @"Credit card";
+    [self.floatingLabel sizeToFit];
+    
     [self setupPlaceholderView];
 	
-	self.innerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, self.frame.size.height)];
+	self.innerView = [[UIView alloc] initWithFrame:CGRectMake(0, 10, 0, self.frame.size.height)];
     self.innerView.clipsToBounds = YES;
 	
 	_cardLastFourField = [UITextField new];
@@ -159,9 +158,13 @@
 								   NSForegroundColorAttributeName: [UIColor blackColor]};
 	
     [self.innerView addSubview:_cardNumberField];
-	
-    [self addSubview:self.innerView];
+	_clippingView = [[UIView alloc] initWithFrame:self.bounds];
+    _clippingView.clipsToBounds = YES;
+    [self addSubview:_clippingView];
+    [_clippingView addSubview:self.innerView];
+    [self addSubview:self.floatingLabel];
     [self addSubview:_placeholderView];
+
     
 	if (self.imageStyle == PKViewImageStyleNormal) {
 //		UIView *line = [[UIView alloc] initWithFrame:CGRectMake(_placeholderView.frame.size.width - 0.5, 0, 0.5,  _innerView.frame.size.height)];
@@ -235,12 +238,26 @@
 
 - (void)layoutSubviews
 {
+    [super layoutSubviews];
+    
+    [self setLabelOriginForTextAlignment];
+    
+    BOOL firstResponder = self.isFirstResponder;
+    _floatingLabel.textColor = [UIColor blueColor]; //(firstResponder ? self.getLabelActiveColor : _floatingLabel.textColor);
+    if (!self.floatingLabel.text || 0 == [self.floatingLabel.text length]) {
+        [self hideFloatingLabel:firstResponder];
+    }
+    else {
+        [self showFloatingLabel:firstResponder];
+    }
+    //_borderLayer.borderColor = _floatingLabel.textColor.CGColor;
+    
 	if (self.imageStyle == PKViewImageStyleOutline) {
 		CGFloat height = 18;
 		CGFloat y = (self.frame.size.height - height) / 2;
-		CGFloat width = 25 + y;
+		CGFloat width = 24 + y;
 		
-		_placeholderView.frame = CGRectMake(0, y, width, height);
+		_placeholderView.frame = CGRectMake(.5, y, width, height);
 		_placeholderView.contentMode = UIViewContentModeRight;
 	}
 	else {
@@ -317,6 +334,61 @@
 										  CGRectGetMaxX(_cardCVCField.frame),
 										  self.frame.size.height);
 }
+
+- (void)setLabelOriginForTextAlignment
+{
+    
+    _floatingLabel.frame = CGRectMake(7, _floatingLabel.frame.origin.y,
+                                      _floatingLabel.frame.size.width, _floatingLabel.frame.size.height);
+}
+#pragma mark - Floating Text Field Methods
+
+- (void)hideFloatingLabel:(BOOL)animated
+{
+    void (^hideBlock)() = ^{
+        _floatingLabel.alpha = 0.0f;
+        _floatingLabel.frame = CGRectMake(_floatingLabel.frame.origin.x,
+                                          _floatingLabel.font.lineHeight + self.floatingLabelYPadding.floatValue,
+                                          _floatingLabel.frame.size.width,
+                                          _floatingLabel.frame.size.height);
+        
+    };
+    
+    if (animated || _animateEvenIfNotFirstResponder) {
+        [UIView animateWithDuration:0.5//_floatingLabelHideAnimationDuration
+                              delay:0.0f
+                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseIn
+                         animations:hideBlock
+                         completion:nil];
+    }
+    else {
+        hideBlock();
+    }
+}
+
+- (void)showFloatingLabel:(BOOL)animated
+{
+    void (^showBlock)() = ^{
+        _floatingLabel.alpha = 1.0f;
+        _floatingLabel.frame = CGRectMake(_floatingLabel.frame.origin.x,
+                                          2.0f,
+                                          _floatingLabel.frame.size.width,
+                                          _floatingLabel.frame.size.height);
+    };
+    
+    if (animated || _animateEvenIfNotFirstResponder) {
+        [UIView animateWithDuration: 0.5//_floatingLabelShowAnimationDuration
+                              delay:0.0f
+                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
+                         animations:showBlock
+                         completion:nil];
+    }
+    else {
+        showBlock();
+    }
+}
+
+
 
 // State
 
