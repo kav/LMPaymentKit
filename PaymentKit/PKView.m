@@ -20,9 +20,7 @@
 }
 
 @property (strong, nonatomic) UIView *clippingView;
-@property (nonatomic, strong) NSNumber * floatingLabelYPadding UI_APPEARANCE_SELECTOR;
-@property (nonatomic, assign) NSInteger animateEvenIfNotFirstResponder UI_APPEARANCE_SELECTOR; // Can't use BOOL for UI_APPEARANCE. Non-zero == YES
-@property (nonatomic, assign) NSTimeInterval floatingLabelHideAnimationDuration;
+//@property (nonatomic, assign) NSInteger animateEvenIfNotFirstResponder;
 
 @end
 
@@ -116,18 +114,22 @@
 
 - (void)setup
 {
+    self.backgroundColor = [UIColor whiteColor];
+    self.clipsToBounds = NO;
 	self.imageStyle = PKViewImageStyleNormal;
 	self.borderStyle = UITextBorderStyleRoundedRect;
-	self.layer.masksToBounds = YES;
-	self.backgroundColor = [UIColor whiteColor];
-    	
+	self.innerView = [[UIView alloc] initWithFrame:CGRectMake(0, 10, 0, self.frame.size.height)];
+    self.innerView.clipsToBounds = YES;
+    
+    [self setupPlaceholderView];
+    
     isInitialState = YES;
     isValidState   = NO;
     
     _floatingLabel = [UILabel new];
     _floatingLabel.font = [UIFont boldSystemFontOfSize:12.0f];
-    _floatingLabel.frame = CGRectMake(15,-_floatingLabel.font.lineHeight/2, 0, 0);
-//    _floatingLabel.alpha = 0.0f;
+    _floatingLabel.frame = CGRectMake(7, -8, 0, 0);
+    _floatingLabel.alpha = 0.0f;
 	
     // some basic default fonts/colors
     _floatingLabel.textColor = [UIColor grayColor];
@@ -136,15 +138,10 @@
 //    _floatingLabelShowAnimationDuration = kFloatingLabelShowAnimationDuration;
 //    _floatingLabelHideAnimationDuration = kFloatingLabelHideAnimationDuration;
     
-    self.clipsToBounds = NO;
     self.floatingLabel.text = @"Credit card";
+    self.floatingLabel.adjustsFontSizeToFitWidth = YES;
     [self.floatingLabel sizeToFit];
-    
-    [self setupPlaceholderView];
-	
-	self.innerView = [[UIView alloc] initWithFrame:CGRectMake(0, 10, 0, self.frame.size.height)];
-    self.innerView.clipsToBounds = YES;
-	
+
 	_cardLastFourField = [UITextField new];
 	_cardLastFourField.defaultTextAttributes = _defaultTextAttributes;
 	_cardLastFourField.backgroundColor = self.backgroundColor;
@@ -162,16 +159,9 @@
     _clippingView.clipsToBounds = YES;
     [self addSubview:_clippingView];
     [_clippingView addSubview:self.innerView];
-    [self addSubview:self.floatingLabel];
     [self addSubview:_placeholderView];
+    [self addSubview:self.floatingLabel];
 
-    
-	if (self.imageStyle == PKViewImageStyleNormal) {
-//		UIView *line = [[UIView alloc] initWithFrame:CGRectMake(_placeholderView.frame.size.width - 0.5, 0, 0.5,  _innerView.frame.size.height)];
-//		line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
-//		[self addSubview:line];
-	}
-	
     [self stateCardNumber];
 }
 
@@ -201,22 +191,12 @@
 
 - (void)setupCardExpiryField
 {
-//	UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, -6.0, 0.5, _innerView.frame.size.height)];
-//	line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
-//	
 	_cardExpiryField = [self textFieldWithPlaceholder:@"MM/YY"];
-//	_cardExpiryField.leftView = line;
-//	_cardExpiryField.leftViewMode = UITextFieldViewModeAlways;
 }
 
 - (void)setupCardCVCField
 {
-//	UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, -6.0, 0.5, _innerView.frame.size.height)];
-//	line.backgroundColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.3];
-//	
 	_cardCVCField = [self textFieldWithPlaceholder:@"CVC"];
-//	_cardCVCField.leftView = line;
-//	_cardCVCField.leftViewMode = UITextFieldViewModeAlways;
 }
 
 // Accessors
@@ -239,18 +219,6 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    
-    [self setLabelOriginForTextAlignment];
-    
-    BOOL firstResponder = self.isFirstResponder;
-    _floatingLabel.textColor = [UIColor blueColor]; //(firstResponder ? self.getLabelActiveColor : _floatingLabel.textColor);
-    if (!self.floatingLabel.text || 0 == [self.floatingLabel.text length]) {
-        [self hideFloatingLabel:firstResponder];
-    }
-    else {
-        [self showFloatingLabel:firstResponder];
-    }
-    //_borderLayer.borderColor = _floatingLabel.textColor.CGColor;
     
 	if (self.imageStyle == PKViewImageStyleOutline) {
 		CGFloat height = 18;
@@ -341,43 +309,23 @@
     _floatingLabel.frame = CGRectMake(7, _floatingLabel.frame.origin.y,
                                       _floatingLabel.frame.size.width, _floatingLabel.frame.size.height);
 }
-#pragma mark - Floating Text Field Methods
 
-- (void)hideFloatingLabel:(BOOL)animated
-{
-    void (^hideBlock)() = ^{
-        _floatingLabel.alpha = 0.0f;
-        _floatingLabel.frame = CGRectMake(_floatingLabel.frame.origin.x,
-                                          _floatingLabel.font.lineHeight + self.floatingLabelYPadding.floatValue,
-                                          _floatingLabel.frame.size.width,
-                                          _floatingLabel.frame.size.height);
-        
-    };
-    
-    if (animated || _animateEvenIfNotFirstResponder) {
-        [UIView animateWithDuration:0.5//_floatingLabelHideAnimationDuration
-                              delay:0.0f
-                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseIn
-                         animations:hideBlock
-                         completion:nil];
-    }
-    else {
-        hideBlock();
-    }
-}
+#pragma mark - Floating Label Methods
 
 - (void)showFloatingLabel:(BOOL)animated
 {
     void (^showBlock)() = ^{
         _floatingLabel.alpha = 1.0f;
-        _floatingLabel.frame = CGRectMake(_floatingLabel.frame.origin.x,
-                                          2.0f,
-                                          _floatingLabel.frame.size.width,
-                                          _floatingLabel.frame.size.height);
+//        _floatingLabel.frame = ({
+//            CGRect frame = _floatingLabel.frame;
+//            frame.origin.y = -10.0f;
+//            
+//            frame;
+//        });
     };
     
-    if (animated || _animateEvenIfNotFirstResponder) {
-        [UIView animateWithDuration: 0.5//_floatingLabelShowAnimationDuration
+    if (animated) {
+        [UIView animateWithDuration:0.3//_floatingLabelShowAnimationDuration
                               delay:0.0f
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseOut
                          animations:showBlock
@@ -388,6 +336,28 @@
     }
 }
 
+- (void)hideFloatingLabel:(BOOL)animated
+{
+    void (^hideBlock)() = ^{
+        _floatingLabel.alpha = 0.0f;
+//        _floatingLabel.frame = CGRectMake(_floatingLabel.frame.origin.x,
+//                                          _floatingLabel.font.lineHeight + 1.0,
+//                                          _floatingLabel.frame.size.width,
+//                                          _floatingLabel.frame.size.height);
+        
+    };
+    
+    if (animated) {
+        [UIView animateWithDuration:0.3//_floatingLabelHideAnimationDuration
+                              delay:0.0f
+                            options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseIn
+                         animations:hideBlock
+                         completion:nil];
+    }
+    else {
+        hideBlock();
+    }
+}
 
 
 // State
@@ -585,29 +555,61 @@
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
+    if (![textField isKindOfClass:[PKTextField class]]) {
+        [self hideFloatingLabel:YES];
+    }
+    
+    
     if ([textField isEqual:_cardCVCField]) {
+        self.floatingLabel.text = @"CVV";
         [self setPlaceholderToCVC];
+    } else if (textField == self.cardExpiryField) {
+        self.floatingLabel.text = @"Exp Date";
+        [self setPlaceholderToCardType];
     } else {
         [self setPlaceholderToCardType];
     }
     
     if ([textField isEqual:_cardNumberField] && !isInitialState) {
+        self.floatingLabel.text = @"Card Number";
         [self stateCardNumber];
     }
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)replacementString
 {
+    //new
+    [self setLabelOriginForTextAlignment];
+    
+    //    if (self.floatingLabelFont) {
+    //        _floatingLabel.font = self.floatingLabelFont;
+    //    }
+    
+    BOOL firstResponder = self.isFirstResponder;
+    //    _floatingLabel.textColor = (firstResponder && self.text && self.cardNumberField.text.length > 0 ? self.getLabelActiveColor : self.floatingLabelTextColor);
+    if ([textField.text length] == 1 && [replacementString isEqualToString:@""]) {
+        [self hideFloatingLabel:firstResponder];
+    }
+    else {
+        [self showFloatingLabel:firstResponder];
+    }
+    //end new
+    
     if ([textField isEqual:_cardNumberField]) {
+        self.floatingLabel.text = @"Credit Card";
         return [self cardNumberFieldShouldChangeCharactersInRange:range replacementString:replacementString];
     }
     else if ([textField isEqual:_cardExpiryField]) {
+        self.floatingLabel.text = @"Exp Date";
+
         return [self cardExpiryShouldChangeCharactersInRange:range replacementString:replacementString];
     }
     else if ([textField isEqual:_cardCVCField]) {
+        self.floatingLabel.text = @"CVV";
+
         return [self cardCVCShouldChangeCharactersInRange:range replacementString:replacementString];
     }
-    
+
     return YES;
 }
 
@@ -728,17 +730,25 @@
 
 - (void)textFieldIsValid:(UITextField *)textField {
     textField.textColor = _defaultTextAttributes[NSForegroundColorAttributeName];
+    self.tintColor = textField.textColor;
     [self checkValid];
 }
 
 - (void)textFieldIsInvalid:(UITextField *)textField withErrors:(BOOL)errors {
     if (errors) {
         textField.textColor = kPKRedColor;
+        self.tintColor = kPKRedColor;
     } else {
-        textField.textColor = _defaultTextAttributes[NSForegroundColorAttributeName];;
+        textField.textColor = _defaultTextAttributes[NSForegroundColorAttributeName];
+        self.tintColor = textField.textColor;
     }
 	
     [self checkValid];
+}
+-(void)setTintColor:(UIColor *)tintColor {
+    [super setTintColor:tintColor];
+    self.floatingLabel.textColor = self.tintColor;
+    self.clippingView.layer.borderColor = self.tintColor.CGColor;
 }
 
 #pragma mark -

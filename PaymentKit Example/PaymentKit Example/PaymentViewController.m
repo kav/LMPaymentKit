@@ -15,6 +15,16 @@
     [super viewDidLoad];
     self.paymentView.delegate = self;
 	[self.paymentView becomeFirstResponder];
+    self.paymentView.imageStyle = PKViewImageStyleOutline;
+    self.paymentView.borderStyle = UITextBorderStyleLine;
+    self.paymentView.floatingLabel.text = @"Credit card";
+    
+    self.nameField.placeholder = @"First Name";
+    self.nameField.font = [UIFont systemFontOfSize:12.0f];
+    self.nameField.floatingLabelFont = [UIFont fontWithName:@"HelveticaNeue_Light" size:12.0f];
+    self.nameField.floatingLabelYPadding = @-5;
+    self.nameField.tintColor = [UIColor blackColor];
+                                        
 }
 
 - (void)paymentView:(PKView *)paymentView withCard:(PKCard *)card isValid:(BOOL)valid
