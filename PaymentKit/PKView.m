@@ -123,6 +123,10 @@
     
     [self setupPlaceholderView];
     
+    self.cardNumberField.autocorrectionType = UITextAutocorrectionTypeNo;
+    self.cardExpiryField.autocorrectionType = UITextAutocorrectionTypeNo;
+    self.cardCVCField.autocorrectionType = UITextAutocorrectionTypeNo;
+    
     isInitialState = YES;
     isValidState   = NO;
     

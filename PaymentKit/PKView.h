@@ -13,6 +13,7 @@
 #import "PKCardCVC.h"
 #import "PKAddressZip.h"
 #import "PKUSAddressZip.h"
+#import <TOMSMorphingLabel/TOMSMorphingLabel.h>
 
 @class PKView, PKTextField;
 

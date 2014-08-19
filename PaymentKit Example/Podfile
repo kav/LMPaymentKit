@@ -2,6 +2,7 @@
 # platform :ios, "6.0"
 
 target "PaymentKit Example" do
+ pod "TOMSMorphingLabel"
  pod "JVFloatLabeledTextField", :path => "../../JVFloatLabeledTextField"
 end
 
