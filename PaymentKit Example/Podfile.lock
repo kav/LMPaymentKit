@@ -1,0 +1,17 @@
+PODS:
+  - JVFloatLabeledTextField (0.0.8)
+  - TOMSMorphingLabel (0.2.2)
+
+DEPENDENCIES:
+  - JVFloatLabeledTextField (from `../../JVFloatLabeledTextField`)
+  - TOMSMorphingLabel
+
+EXTERNAL SOURCES:
+  JVFloatLabeledTextField:
+    :path: ../../JVFloatLabeledTextField
+
+SPEC CHECKSUMS:
+  JVFloatLabeledTextField: 53177a74ff6f3f0dddd165cf6cab01d1e4433a9b
+  TOMSMorphingLabel: b0ef90ad7a660a3a30bdf626cfc23028fa0b67f9
+
+COCOAPODS: 0.33.1

@@ -114,6 +114,19 @@
 
 - (void)setup
 {
+    _floatingLabel = [UILabel new];
+    _floatingLabel.font = [UIFont boldSystemFontOfSize:12.0f];
+    _floatingLabel.frame = CGRectMake(7, -8, 0, 0);
+    _floatingLabel.alpha = 0.0f;
+	
+    // some basic default fonts/colors
+    _floatingLabel.textColor = [UIColor grayColor];
+    _floatingLabel.backgroundColor = [UIColor whiteColor];
+    
+    self.floatingLabel.text = @"Credit card";
+    self.floatingLabel.adjustsFontSizeToFitWidth = YES;
+    [self.floatingLabel sizeToFit];
+    
     self.backgroundColor = [UIColor whiteColor];
     self.clipsToBounds = NO;
 	self.imageStyle = PKViewImageStyleNormal;
@@ -130,21 +143,13 @@
     isInitialState = YES;
     isValidState   = NO;
     
-    _floatingLabel = [UILabel new];
-    _floatingLabel.font = [UIFont boldSystemFontOfSize:12.0f];
-    _floatingLabel.frame = CGRectMake(7, -8, 0, 0);
-    _floatingLabel.alpha = 0.0f;
-	
-    // some basic default fonts/colors
-    _floatingLabel.textColor = [UIColor grayColor];
-    _floatingLabel.backgroundColor = [UIColor whiteColor];
+   
 //    _animateEvenIfNotFirstResponder = NO;
 //    _floatingLabelShowAnimationDuration = kFloatingLabelShowAnimationDuration;
 //    _floatingLabelHideAnimationDuration = kFloatingLabelHideAnimationDuration;
     
-    self.floatingLabel.text = @"Credit card";
-    self.floatingLabel.adjustsFontSizeToFitWidth = YES;
-    [self.floatingLabel sizeToFit];
+  
+
 
 	_cardLastFourField = [UITextField new];
 	_cardLastFourField.defaultTextAttributes = _defaultTextAttributes;
@@ -162,9 +167,11 @@
 	_clippingView = [[UIView alloc] initWithFrame:self.bounds];
     _clippingView.clipsToBounds = YES;
     [self addSubview:_clippingView];
-    [_clippingView addSubview:self.innerView];
-    [self addSubview:_placeholderView];
     [self addSubview:self.floatingLabel];
+
+    [_clippingView addSubview:self.innerView];
+    
+    [self addSubview:_placeholderView];
 
     [self stateCardNumber];
 }
@@ -233,7 +240,7 @@
 		_placeholderView.contentMode = UIViewContentModeRight;
 	}
 	else {
-		_placeholderView.frame = CGRectMake(0, (self.frame.size.height - 32) / 2, 51, 32);
+		_placeholderView.frame = CGRectMake(5, (self.frame.size.height - 20) / 2, 32, 20);
 	}
 	
 	NSDictionary *attributes = self.defaultTextAttributes;
@@ -551,8 +558,13 @@
 	if (self.imageStyle == PKViewImageStyleOutline) {
 		cardTypeName = [NSString stringWithFormat:@"%@-outline", cardTypeName];
 	}
-	
-    [self setPlaceholderViewImage:[UIImage imageNamed:cardTypeName]];
+    
+    NSString *creditCardImageString = @"icon_creditcard_";
+    NSString *finalcreditCardImageString = [creditCardImageString stringByAppendingString:cardTypeName];
+    
+    NSLog(@"credit card image name;: %@",finalcreditCardImageString);
+    
+    [self setPlaceholderViewImage:[UIImage imageNamed:finalcreditCardImageString]];
 }
 
 // Delegates
